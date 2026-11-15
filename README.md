@@ -91,7 +91,7 @@ flowchart LR
 
 1. The React app sends same-origin `/api` requests through Vite during development. FastAPI uses a signed session cookie and checks record ownership on protected endpoints.
 2. A policy PDF is size/signature checked, stored under a random server-side name, read page by page, and optionally OCRed. Suggested fields are saved for user review.
-3. The document is chunked with page numbers. Ollama generates 768-dimensional embeddings; chunks are stored with their owner and document/source association. If Ollama is unavailable, extracted text remains stored and indexing can be retried.
+3. The document is split on section headings and paragraph boundaries, retaining the heading and page number with each chunk. Long paragraphs use a sentence/word-boundary fallback with a size cap and small overlap. Ollama generates 768-dimensional embeddings; chunks are stored with their owner and document/source association. If Ollama is unavailable, extracted text remains stored and indexing can be retried.
 4. For a question, the API selects the relevant global official sources and only that user's documents in the chosen scope. It ranks chunk embeddings by cosine similarity and adds a snapshot of that user's saved tracker records.
 5. Ollama receives the retrieved evidence with citation markers. The API returns the answer, source metadata and excerpts, an insufficient-evidence flag, and the informational disclaimer.
 
@@ -240,7 +240,7 @@ npm run build
 npm audit --audit-level=moderate
 ```
 
-The checked-in suite has 23 backend tests and 10 frontend tests. It covers account and record APIs, ownership isolation, document upload/review/cleanup and OCR configuration, date extraction, dashboard/comparison, assistant API integration, RAG citations/abstention/tracker context and out-of-scope input handling, Ollama REST request handling with a fake HTTP client, and authentication, garage, policy-payment, claim, dashboard, comparison, support, and assistant UI interactions. The OCR unit test uses mocked recognition text for repeatability; the installed Tesseract engine was also exercised against a synthetic scanned policy PDF. Live Ollama checks confirmed 768-dimensional embeddings and a grounded answer containing its citation marker. In the verified checkout, all listed backend and frontend tests, lint and format checks, the production build, and dependency audit passed.
+The checked-in suite has 25 backend tests and 10 frontend tests. It covers account and record APIs, ownership isolation, document upload/review/cleanup and OCR configuration, date extraction, heading-aware policy chunking, dashboard/comparison, assistant API integration, RAG citations/abstention/tracker context and out-of-scope input handling, Ollama REST request handling with a fake HTTP client, and authentication, garage, policy-payment, claim, dashboard, comparison, support, and assistant UI interactions. The OCR unit test uses mocked recognition text for repeatability; the installed Tesseract engine was also exercised against a synthetic scanned policy PDF. Live Ollama checks confirmed 768-dimensional embeddings and a grounded answer containing its citation marker. In the verified checkout, all listed backend and frontend tests, lint and format checks, the production build, and dependency audit passed.
 
 ## Configuration and data safety
 

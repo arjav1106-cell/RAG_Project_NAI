@@ -82,17 +82,92 @@ def suggest_policy_fields(text: str) -> dict:
 
 
 def make_chunks(
-    page_texts: list[dict[str, str | int]], size: int = 1600, overlap: int = 180
+    page_texts: list[dict[str, str | int]], size: int = 1000, overlap: int = 120
 ) -> list[dict]:
+    """Split policy pages on headings and paragraph boundaries, with a bounded fallback."""
     chunks: list[dict] = []
     for page in page_texts:
-        text = str(page["text"]).strip()
-        for start in range(0, len(text), size - overlap):
-            piece = text[start : start + size].strip()
-            if len(piece) >= 50:
-                chunks.append(
-                    {"page_number": int(page["page_number"]), "section": "", "content": piece}
+        section = ""
+        paragraph_lines: list[str] = []
+        groups: list[tuple[str, str]] = []
+
+        def flush_paragraph(section_value: str, lines=paragraph_lines, target=groups) -> None:
+            paragraph = " ".join(line.strip() for line in lines).strip()
+            if paragraph:
+                target.append((section_value, paragraph))
+            lines.clear()
+
+        for raw_line in str(page["text"]).splitlines():
+            line = raw_line.strip()
+            if not line:
+                flush_paragraph(section)
+                continue
+            is_heading = bool(
+                re.match(r"^(?:section|clause)\s+[\w.-]+\b", line, re.IGNORECASE)
+                or re.match(r"^\d+(?:\.\d+)*[.)]?\s+\S", line)
+                or (
+                    len(line) <= 120
+                    and sum(char.isalpha() for char in line) >= 4
+                    and sum(char.islower() for char in line) <= 2
                 )
+            )
+            if is_heading:
+                flush_paragraph(section)
+                section = line[:255]
+                groups.append((section, line))
+            else:
+                paragraph_lines.append(line)
+        flush_paragraph(section)
+
+        current_section = ""
+        current_parts: list[str] = []
+
+        def emit(
+            section_value: str, page_number=int(page["page_number"]), parts=current_parts
+        ) -> None:
+            content = "\n\n".join(parts).strip()
+            if len(content) >= 50:
+                chunks.append(
+                    {
+                        "page_number": page_number,
+                        "section": section_value[:255],
+                        "content": content,
+                    }
+                )
+            parts.clear()
+
+        for group_section, paragraph in groups:
+            if len(paragraph) > size:
+                emit(current_section)
+                start = 0
+                while start < len(paragraph):
+                    end = min(start + size, len(paragraph))
+                    if end < len(paragraph):
+                        boundary = max(
+                            paragraph.rfind(". ", start, end), paragraph.rfind(" ", start, end)
+                        )
+                        if boundary > start + size // 2:
+                            end = boundary + (1 if paragraph[boundary] == "." else 0)
+                    piece = paragraph[start:end].strip()
+                    if len(piece) >= 50:
+                        chunks.append(
+                            {
+                                "page_number": int(page["page_number"]),
+                                "section": group_section[:255],
+                                "content": piece,
+                            }
+                        )
+                    if end >= len(paragraph):
+                        break
+                    start = max(start + 1, end - overlap)
+                continue
+            proposed = "\n\n".join([*current_parts, paragraph])
+            if current_parts and (group_section != current_section or len(proposed) > size):
+                emit(current_section)
+            if not current_parts:
+                current_section = group_section
+            current_parts.append(paragraph)
+        emit(current_section)
     return chunks
 
 
