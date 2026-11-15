@@ -90,7 +90,7 @@ async def upload_document(
     db.commit()
     db.refresh(document)
     try:
-        pages = extract_pdf(path)
+        pages = extract_pdf(path, tesseract_cmd=settings.tesseract_cmd or None)
         document.extracted_text = "\n\n".join(
             f"[Page {page['page_number']}]\n{page['text']}"
             for page in pages

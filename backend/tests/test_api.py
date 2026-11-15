@@ -115,9 +115,17 @@ def test_document_upload_extracts_reviewable_fields(
     from app.core.config import Settings
     from app.services.ollama import OllamaUnavailable
 
-    settings = Settings(data_dir=tmp_path)
+    settings = Settings(data_dir=tmp_path, tesseract_cmd=r"C:\OCR\tesseract.exe")
     monkeypatch.setattr(documents_api, "get_settings", lambda: settings)
     monkeypatch.setattr(ingestion, "get_settings", lambda: settings)
+    original_extract_pdf = documents_api.extract_pdf
+    extraction_commands = []
+
+    def extract_with_configured_tesseract(path, tesseract_cmd=None):
+        extraction_commands.append(tesseract_cmd)
+        return original_extract_pdf(path, tesseract_cmd)
+
+    monkeypatch.setattr(documents_api, "extract_pdf", extract_with_configured_tesseract)
 
     class OfflineOllama:
         async def embed(self, _text):
@@ -136,6 +144,7 @@ def test_document_upload_extracts_reviewable_fields(
     assert body["suggested_fields"]["premium_amount"] == 18500.0
     assert body["suggested_fields"]["start_date"] == "2026-01-01"
     assert body["suggested_fields"]["end_date"] == "2026-12-31"
+    assert extraction_commands == [r"C:\OCR\tesseract.exe"]
     invalid_review = registered_client.post(
         f"/api/documents/{body['id']}/review",
         json={"start_date": "2026-12-31", "end_date": "2026-01-01"},

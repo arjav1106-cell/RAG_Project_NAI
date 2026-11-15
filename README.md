@@ -2,7 +2,7 @@
 
 An India-focused **Legal-domain Retrieval-Augmented Generation (RAG)** application for organizing motor insurance and understanding policy wording. Vahana keeps a user's vehicles, policies, payments, claims, and uploaded documents together. Its assistant retrieves passages from selected policy documents and curated official sources, includes the user's saved tracker data, and returns explanations with source references.
 
-> **Project status:** Working local prototype. The core web application and API are implemented. The actual Ollama model service and scanned-PDF OCR need to be installed locally to exercise those integrations end to end. This is an informational tool, not a coverage decision or legal advice.
+> **Project status:** Working local prototype. The web application, API, local Ollama generation/embedding path, and scanned-PDF OCR have been exercised end to end. This is an informational tool, not a coverage decision or legal advice.
 
 ## Problem
 
@@ -170,7 +170,7 @@ All routes are under `/api`; interactive OpenAPI documentation is available at `
 
 - Python 3.10 or later and Node.js/npm.
 - [Ollama](https://ollama.com/download) for live assistant answers and policy indexing.
-- Tesseract OCR only if scanned PDFs need to be read. Configure its executable path in the environment if it is not on `PATH`.
+- Tesseract OCR only if scanned PDFs need to be read. It must include English (`eng`) language data. Set `TESSERACT_CMD` in `backend/.env` if its executable is not on `PATH`.
 
 ### Configure and install
 
@@ -201,6 +201,7 @@ ollama pull nomic-embed-text
 ```
 
 Ollama listens at `http://localhost:11434` by default. Model tags can be changed in `backend/.env`.
+On Windows, if Tesseract is not on `PATH`, set `TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe` in `backend/.env`.
 
 ### Run locally
 
@@ -238,7 +239,7 @@ npm run build
 npm audit --audit-level=moderate
 ```
 
-The checked-in suite currently has 21 backend tests and 10 frontend tests. It covers account and record APIs, ownership isolation, document upload/review/cleanup, date extraction, dashboard/comparison, assistant API integration, RAG citations/abstention/tracker context, Ollama REST request handling with a fake HTTP client, and authentication, garage, policy-payment, claim, dashboard, comparison, support, and assistant UI interactions. The OCR path is exercised with mocked recognition text. Live Ollama generation and the installed Tesseract engine still require local services and have not been verified in this environment.
+The checked-in suite has 21 backend tests and 10 frontend tests. It covers account and record APIs, ownership isolation, document upload/review/cleanup and OCR configuration, date extraction, dashboard/comparison, assistant API integration, RAG citations/abstention/tracker context, Ollama REST request handling with a fake HTTP client, and authentication, garage, policy-payment, claim, dashboard, comparison, support, and assistant UI interactions. The OCR unit test uses mocked recognition text for repeatability; the installed Tesseract engine was also exercised against a synthetic scanned policy PDF. Live Ollama checks confirmed 768-dimensional embeddings and a grounded answer containing its citation marker. In the verified checkout, all listed backend and frontend tests, lint and format checks, the production build, and dependency audit passed.
 
 ## Configuration and data safety
 

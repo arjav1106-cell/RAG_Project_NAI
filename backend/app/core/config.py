@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     ollama_chat_model: str = "qwen3:4b-instruct"
     ollama_embedding_model: str = "nomic-embed-text"
     ollama_timeout_seconds: float = 90.0
+    tesseract_cmd: str = ""
     cors_origins: str = "http://localhost:5173"
     cookie_secure: bool = False
 
