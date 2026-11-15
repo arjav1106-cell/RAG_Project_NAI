@@ -238,7 +238,7 @@ npm run build
 npm audit --audit-level=moderate
 ```
 
-The checked-in tests cover account and record APIs, ownership isolation, document upload/review and cleanup, dashboard/comparison, RAG citations/abstention/tracker context, and authentication, garage, policy-payment, claim, and assistant UI interactions. Live Ollama generation and scanned-PDF OCR require their local services and are not covered by the fake-client test suite.
+The checked-in suite currently has 19 backend tests and 10 frontend tests. It covers account and record APIs, ownership isolation, document upload/review/cleanup, date extraction, dashboard/comparison, RAG citations/abstention/tracker context, Ollama REST request handling with a fake HTTP client, and authentication, garage, policy-payment, claim, dashboard, comparison, support, and assistant UI interactions. The OCR path is exercised with mocked recognition text. Live Ollama generation and the installed Tesseract engine still require local services and have not been verified in this environment.
 
 ## Configuration and data safety
 
