@@ -56,6 +56,7 @@ The assistant can explain what the retrieved evidence appears to say about own-d
 - Include the selected account tracker context (coverage, premiums, payments, and claim history) in the answer context.
 - Return source cards with publisher/title, clause or page location, excerpt, and official link where available.
 - Abstain when retrieved material is insufficient and show an informational-use disclaimer.
+- Reject clearly unrelated questions and explicit vehicle references that do not match the user's garage; keep evidence tied to its individual vehicle and policy.
 - Provide grievance guidance linked to IRDAI's [Bima Bharosa FAQ](https://bimabharosa.irdai.gov.in/Home/FAQ).
 
 The initial curated corpus includes Sections 146–147 of the official [consolidated Motor Vehicles Act, 1988](https://www.indiacode.nic.in/bitstream/123456789/1798/1/eng.pdf) and IRDAI's grievance FAQs. These starter summaries were checked on 2026-11-15; expand and re-check the source set before using the prototype for real decisions.
@@ -239,7 +240,7 @@ npm run build
 npm audit --audit-level=moderate
 ```
 
-The checked-in suite has 21 backend tests and 10 frontend tests. It covers account and record APIs, ownership isolation, document upload/review/cleanup and OCR configuration, date extraction, dashboard/comparison, assistant API integration, RAG citations/abstention/tracker context, Ollama REST request handling with a fake HTTP client, and authentication, garage, policy-payment, claim, dashboard, comparison, support, and assistant UI interactions. The OCR unit test uses mocked recognition text for repeatability; the installed Tesseract engine was also exercised against a synthetic scanned policy PDF. Live Ollama checks confirmed 768-dimensional embeddings and a grounded answer containing its citation marker. In the verified checkout, all listed backend and frontend tests, lint and format checks, the production build, and dependency audit passed.
+The checked-in suite has 23 backend tests and 10 frontend tests. It covers account and record APIs, ownership isolation, document upload/review/cleanup and OCR configuration, date extraction, dashboard/comparison, assistant API integration, RAG citations/abstention/tracker context and out-of-scope input handling, Ollama REST request handling with a fake HTTP client, and authentication, garage, policy-payment, claim, dashboard, comparison, support, and assistant UI interactions. The OCR unit test uses mocked recognition text for repeatability; the installed Tesseract engine was also exercised against a synthetic scanned policy PDF. Live Ollama checks confirmed 768-dimensional embeddings and a grounded answer containing its citation marker. In the verified checkout, all listed backend and frontend tests, lint and format checks, the production build, and dependency audit passed.
 
 ## Configuration and data safety
 

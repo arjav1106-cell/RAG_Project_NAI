@@ -17,6 +17,58 @@ from app.models import (
 from app.services.ollama import OllamaClient, OllamaUnavailable, citation_id
 
 DISCLAIMER = "Informational explanation only. The issued policy and the insurer's assessment govern actual coverage and claims."
+OFF_TOPIC_ANSWER = (
+    "I can help with your saved vehicles, motor insurance policies, payments, claims, "
+    "policy documents, or related Indian motor-insurance guidance. I can't answer unrelated questions."
+)
+UNREGISTERED_VEHICLE_ANSWER = (
+    "I couldn't match that vehicle to your garage. Add it to your garage or choose a registered "
+    "vehicle before asking about its insurance."
+)
+MOTOR_INSURANCE_TERMS = re.compile(
+    r"\b(vehicle|car|bike|motorcycle|scooter|motor|insurance|insurer|policy|cover(?:age)?|"
+    r"premium|claim|accident|crash|damage|renew(?:al)?|add[- ]?on|exclusion|deductible|"
+    r"third[- ]party|own[- ]damage|garage|registration|document|pdf|grievance|irdai|"
+    r"roadside|depreciation|modif(?:y|ication)|payment|expiry|expire|legal)\b",
+    re.IGNORECASE,
+)
+
+
+def is_in_scope_question(question: str) -> bool:
+    return bool(MOTOR_INSURANCE_TERMS.search(question))
+
+
+def unknown_vehicle_reference(db: Session, user: User, question: str) -> bool:
+    """Reject explicit vehicle identifiers that do not match this user's garage."""
+    vehicles = list(db.scalars(select(Vehicle).where(Vehicle.owner_id == user.id)))
+    normalized = re.sub(r"[^a-z0-9]+", " ", question.casefold()).strip()
+    for vehicle in vehicles:
+        aliases = [vehicle.label, vehicle.registration_number, vehicle.make, vehicle.model]
+        if any(
+            value and re.sub(r"[^a-z0-9]+", " ", value.casefold()).strip() in normalized
+            for value in aliases
+        ):
+            return False
+    explicit = re.search(
+        r"\b(?:my|our|the)\s+([a-z0-9][a-z0-9 -]{0,50}?)\s+"
+        r"(car|vehicle|bike|motorcycle|scooter)\b",
+        question,
+        re.IGNORECASE,
+    )
+    if not explicit:
+        return False
+    identifier = re.sub(r"[^a-z0-9]+", " ", explicit.group(1).casefold()).strip()
+    return not any(
+        identifier
+        in re.sub(
+            r"[^a-z0-9]+",
+            " ",
+            " ".join(
+                str(value) for value in (v.label, v.registration_number, v.make, v.model) if value
+            ).casefold(),
+        ).strip()
+        for v in vehicles
+    )
 
 
 def cosine(left: list[float], right: list[float]) -> float:
@@ -165,6 +217,20 @@ async def answer_question(
     if query is None:
         return {
             "answer": "The selected vehicle or policy was not found.",
+            "citations": [],
+            "insufficient_evidence": True,
+            "disclaimer": DISCLAIMER,
+        }
+    if not is_in_scope_question(question):
+        return {
+            "answer": OFF_TOPIC_ANSWER,
+            "citations": [],
+            "insufficient_evidence": True,
+            "disclaimer": DISCLAIMER,
+        }
+    if unknown_vehicle_reference(db, user, question):
+        return {
+            "answer": UNREGISTERED_VEHICLE_ANSWER,
             "citations": [],
             "insufficient_evidence": True,
             "disclaimer": DISCLAIMER,
