@@ -1,29 +1,27 @@
 # Repository Guidelines
 
-## Project Overview
-
-This repository is an early-stage RAG project for managing Indian vehicle insurance policies and explaining policy terms. Keep documentation aligned with the implementation as it develops. For insurance answers, prefer evidence from the uploaded policy and trusted legal or regulatory sources; cite supporting passages and avoid presenting uncertain interpretations as guaranteed claim outcomes or legal advice.
-
 ## Project Structure
 
-Currently, the repository contains `README.md` for the project scope and planned features, and this `AGENTS.md` contributor guide. Source code, tests, and assets have not been added yet. When adding them, use clear feature-oriented directories and document the resulting structure and setup in the README.
+This project is a React/TypeScript client and FastAPI service for vehicle insurance records and source-grounded policy Q&A. Frontend routes live in `frontend/src/pages/`; shared components, API access, and types are in `frontend/src/components/` and `frontend/src/lib/`. Backend routes are in `backend/app/api/`, SQLAlchemy models and Pydantic schemas are in `backend/app/`, and ingestion, Ollama, and retrieval logic are in `backend/app/services/`. Curated seed sources are in `backend/app/knowledge/sources.json`; tests are in `backend/tests/` and alongside frontend pages.
 
-## Build, Test, and Development
+## Development Commands
 
-No application stack or build, run, or test commands are configured yet. Do not assume a language or framework. When implementation begins, add reproducible setup and run commands to the README and provide commands for formatting, linting, and tests where the chosen stack supports them. For documentation-only changes, run `git diff --check` to catch whitespace errors.
+Run the API from `backend/` with its virtual environment active: `python -m uvicorn app.main:app --reload`. Run the client from `frontend/` with `npm run dev`; Vite proxies `/api` to port 8000. Install Python dependencies with `python -m pip install -r requirements.txt` and frontend dependencies with `npm ci`.
+
+Run backend checks from `backend/`: `python -m pytest`, `python -m ruff check app tests`, and `python -m ruff format --check app tests`. Run frontend checks from `frontend/`: `npm test`, `npm run lint`, `npm run format:check`, and `npm run build`.
 
 ## Style and Naming
 
-Follow the formatter and lint rules introduced with the selected language and framework. Use descriptive names that reflect the feature or domain, and keep modules focused. Use Markdown headings and concise sections in project documentation; write commands and file paths exactly as they should be run or referenced.
+Use Ruff formatting/lint rules for Python (4 spaces, snake_case functions/modules, PascalCase models) and Prettier/ESLint for TypeScript (2 spaces, PascalCase React components, camelCase functions). Keep route logic in API modules and reusable processing in service modules. Use descriptive test names such as `test_rag_abstains_when_there_are_no_sources`.
 
-## Testing Guidelines
+## Testing Expectations
 
-There is no test framework or test suite yet. As features are added, include tests for core behavior, especially document extraction, retrieval relevance, answer citations, and handling of questions that the available sources cannot answer. Document the test command and naming conventions when the framework is selected.
-
-## Commits and Pull Requests
-
-The current history includes `docs: define vehicle insurance RAG project scope`, so use short, imperative Conventional Commit-style subjects such as `feat: add policy upload` or `docs: update setup instructions`. Pull requests should explain the user-facing change, list relevant checks, link related work when applicable, and include screenshots for interface changes.
+Add API tests for validation, record ownership, and persistence, and RAG tests for relevance, citations, tracker scoping, and abstention. Frontend tests should cover forms, loading/error states, and important user interactions. Use synthetic PDFs and fake Ollama clients in tests; do not rely on live user records or model availability. Run the relevant checks before describing behavior as verified.
 
 ## Security and Data Handling
 
-Never commit real policy PDFs, personal information, API keys, credentials, or other sensitive user data. Use synthetic or redacted documents in examples and tests, and keep secrets in local environment configuration that is excluded from version control.
+Never commit real insurance or claim documents, personal data, local databases, `.env` files, or credentials. Keep uploaded PDFs in the configured private data directory and ensure every read, update, and delete operation checks record ownership. Treat model responses as informational; cite evidence and do not promise claim decisions or legal outcomes.
+
+## Commits and Pull Requests
+
+Use short imperative Conventional Commit subjects, for example `feat: include tracker data in policy answers` or `docs: document local setup`. Pull requests should describe user-visible behavior, list checks run, link relevant work, and include screenshots for interface changes.

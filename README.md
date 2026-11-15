@@ -1,80 +1,252 @@
-# Vehicle Insurance Management and Policy Assistant
+# Vahana — Vehicle Insurance Management and Policy Assistant
 
-An India-focused **Legal domain** project exploring how Retrieval-Augmented Generation (RAG) can make vehicle insurance information easier to manage and understand. The planned application brings a user's vehicles, policy details, and insurance documents together, then answers questions using the user's own policy documents and a curated legal and regulatory knowledge base.
+An India-focused **Legal-domain Retrieval-Augmented Generation (RAG)** application for organizing motor insurance and understanding policy wording. Vahana keeps a user's vehicles, policies, payments, claims, and uploaded documents together. Its assistant retrieves passages from selected policy documents and curated official sources, includes the user's saved tracker data, and returns explanations with source references.
 
-> **Project status:** Ideation and initial scope. Implementation details and the final project structure will be documented here as development begins.
+> **Project status:** Working local prototype. The core web application and API are implemented. The actual Ollama model service and scanned-PDF OCR need to be installed locally to exercise those integrations end to end. This is an informational tool, not a coverage decision or legal advice.
 
 ## Problem
 
-People who own multiple cars, bikes, or scooters may have policies from different insurers, with different coverage, add-ons, policy periods, premiums, and renewal dates. Important details are spread across policy PDFs, emails, insurer portals, and vehicle apps. Finding the right clause can be difficult, especially when someone needs to understand their coverage after an accident or before modifying a vehicle.
+Owners of multiple cars, motorcycles, and scooters can have policies from several insurers, with separate coverage, add-ons, payment records, and renewal dates. Details are spread across policy PDFs, emails, insurer portals, and vehicle apps. After an accident or before changing a vehicle, finding the applicable clause and checking it against the right policy can be difficult.
 
-Existing vehicle and insurance apps help with parts of this problem, but a policyholder may still need to locate and interpret the exact terms in their own policy. This project focuses on organizing those policies and making their terms easier to search and understand.
-
-## Proposed solution
-
-The application will provide a digital garage for a user's vehicles and their insurance information. Users can upload policy documents, review extracted details, track renewals and past claims, and ask questions in natural language. A RAG pipeline will retrieve relevant passages from the user's documents and trusted legal or regulatory sources, then generate a plain-language explanation with references to those sources.
-
-The assistant is intended to explain information in the available sources. It cannot guarantee that an insurer will accept a claim or replace advice from an insurer or qualified professional. Claim outcomes depend on the full policy and the specific facts of a case.
+Vahana combines a private multi-vehicle garage with a searchable policy library. It helps users record what they own, keep policy and claim documents close to their records, track expiry and payment history, and ask questions grounded in those records and selected legal sources.
 
 ## Existing apps and the opportunity
 
-Several Indian apps already provide related features. The comparison below describes capabilities publicly presented by these services; it is not a claim that their products lack other features.
+Several Indian services already cover parts of this workflow. This comparison summarizes their publicly presented capabilities and does not claim they lack other features.
 
-| Service | Related capabilities | Opportunity for this project |
-| --- | --- | --- |
-| [CRED Garage](https://cred.club/garage) | Vehicle garage and personalized motor insurance experiences. CRED's [privacy policy](https://cred.club/legal/privacy) also describes consolidating motor insurance details and renewal reminders when a user enables connected services. | Focus on explanations grounded in the exact policy documents a user uploads, with clause-level references across multiple vehicles and insurers. |
-| [Policybazaar app](https://www.policybazaar.com/insurance-app/) | Policy management, vehicle information and alerts, comparisons, and insurance services. | Emphasize policy-specific Q&A and coverage summaries across a user's existing policies, regardless of where they bought them. |
-| [mParivahan](https://mparivahan.parivahan.gov.in/) | Government vehicle services, including access to vehicle insurance validity information. The Government of India's [advisory](https://parivahan.gov.in/parivahan/sites/default/files/NOTIFICATION%26ADVISORY/17th%20Dec%202018.pdf) also describes digital vehicle documents through mParivahan and DigiLocker. | Complement validity checks with a private, user-managed library of policy wording, add-ons, claims history, and renewal information. |
-| [PhonePe Insurance AI assistant](https://www.phonepe.com/insurance/terms/) | AI-assisted motor-insurance information and a purchase journey. Its terms describe AI explanations as preliminary and state that the issued policy document governs. | Center the experience on explaining policies the user already holds, retrieving supporting clauses, and clearly identifying unanswered questions. |
+| Service                                                       | Related capabilities                                                             | Vahana's prototype focus                                                                                                      |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [CRED Garage](https://cred.club/garage)                       | Vehicle garage and motor insurance experiences.                                  | Explain the terms in documents a user uploads, across vehicles and insurers, with clause and page references.                 |
+| [Policybazaar](https://www.policybazaar.com/insurance-app/)   | Policy management, alerts, comparisons, and insurance services.                  | Organize existing policies independently of where they were purchased, then answer questions from their wording.              |
+| [mParivahan](https://mparivahan.parivahan.gov.in/)            | Government vehicle services, including access to insurance validity information. | Complement validity checks with the user's own policy wording, add-ons, payments, and claim notes.                            |
+| [PhonePe Insurance](https://www.phonepe.com/insurance/terms/) | Motor insurance purchase journey and AI-assisted explanations.                   | Focus on policy-specific retrieval, traceable evidence, and clear abstention when available records do not answer a question. |
 
-The proposed distinction is the combination of a **multi-vehicle policy organizer** and a **citation-backed, policy-specific RAG assistant**. The project will demonstrate that distinction in a limited prototype; it is not intended to replace the services above.
+The project demonstrates the combination of a **multi-vehicle policy organizer** and a **citation-backed assistant grounded in policy and legal sources**. It is a prototype, not a replacement for an insurer, government service, or qualified professional.
 
-## Project scope
+## Scope, impact, and boundaries
 
-The initial project is a functional RAG prototype for Indian motor insurance. It will support cars, bikes, and scooters, and allow users to manage policies from different insurers in one place.
+The initial scope is a single-user account workspace for cars, bikes, and scooters, with support for multiple insurers and policies. It aims to reduce time spent locating terms, make renewal and payment records easier to manage, help users compare saved cover, and prepare better-informed questions for their insurer. It also demonstrates document ingestion, retrieval, grounded generation, and citations for the project assignment.
 
-The knowledge base is planned to include policy documents supplied by the user and a curated set of relevant official legal and regulatory sources, such as the [Motor Vehicles Act, 1988](https://www.indiacode.nic.in/bitstream/123456789/1798/1/198859.pdf) and applicable [IRDAI material](https://irdai.gov.in/). Answers should identify the sources they rely on and distinguish facts found in a document from details the user still needs to provide.
+The assistant can explain what the retrieved evidence appears to say about own-damage cover, third-party liability, exclusions, add-ons, modifications, or claim preparation. It cannot decide or guarantee a claim outcome, replace the issued policy, file a claim, buy insurance, or provide legal advice. The insurer's policy and claim assessment remain authoritative.
 
-The prototype will explain coverage based on retrieved terms, but it will not decide or guarantee real claim outcomes, issue legal advice, buy or renew policies, or submit claims to insurers. An insurer's issued policy and claim assessment remain authoritative.
+## Features
 
-## Planned features
+### Garage and policy records
 
-### Garage and policy management
+- Register, sign in, and sign out with account-scoped records.
+- Create, edit, and remove cars, motorcycles, and scooters.
+- Add, edit, and remove multiple policies per vehicle, including insurer, policy number, cover type, own-damage and third-party periods, personal accident cover, premium schedule, add-ons, and notes.
+- Record, view, and remove premium payments with date, amount, status, and reference.
+- View in-app reminders for upcoming or expired coverage and mismatched own-damage/third-party expiry dates.
+- Compare coverage and add-ons recorded across vehicles and policies.
 
-- Add, view, update, and remove vehicles, including cars, bikes, and scooters.
-- Associate one or more insurance policies with each vehicle, including policies from different insurers.
-- Upload and retain policy documents for future reference.
-- Extract policy details such as insurer, policy number, vehicle, cover type, policy period, premium, and selected add-ons; let users review and correct extracted information.
-- Track expiry dates, payment amounts and schedules where applicable, insurer details, coverage, add-ons, and past claims.
-- Show upcoming renewals and potential gaps when relevant coverage periods differ.
+### Policy documents and claims
 
-### RAG policy assistant
+- Upload PDF policy documents and claim attachments; documents are private to their owner.
+- Extract text from digital PDFs and use Tesseract OCR for scanned pages when installed.
+- Suggest insurer, policy number, dates, and premium from extracted text; let the user review and correct the suggestions.
+- Index document chunks for retrieval, retry indexing when the local model was unavailable, download, and remove documents.
+- Record claims, update their status, and attach supporting PDFs.
+- Keep claim-preparation prompts available in the assistant, including a checklist prompt grounded in the user's policy.
 
-- Answer natural-language questions using the user's uploaded policies and the curated knowledge base.
-- Cite the relevant policy clauses or legal and regulatory sources alongside answers.
-- Summarize coverage, exclusions, add-ons, conditions, and claim procedures in plain language.
-- Explain, based on the uploaded policy, whether a described type of damage appears to fall under own-damage or third-party cover, and identify missing facts or relevant exclusions.
-- Explain relevant policy conditions for planned vehicle modifications and suggest confirming changes with the insurer when the documents do not settle the question.
-- Say when the available documents do not provide enough information, instead of presenting an unsupported answer as certain.
+### RAG policy assistant and support
 
-### Claims and policyholder support
+- Ask questions across all policies, one vehicle, or one selected policy.
+- Retrieve passages from the selected user's policy documents and seeded official legal/grievance sources.
+- Include the selected account tracker context (coverage, premiums, payments, and claim history) in the answer context.
+- Return source cards with publisher/title, clause or page location, excerpt, and official link where available.
+- Abstain when retrieved material is insufficient and show an informational-use disclaimer.
+- Provide grievance guidance linked to IRDAI's [Bima Bharosa FAQ](https://bimabharosa.irdai.gov.in/Home/FAQ).
 
-- Provide an accident reporting and claim-preparation checklist based on the user's policy and relevant sources.
-- Help organize claim history and important claim-related documents for each vehicle.
-- Explain insurer grievance steps and point users to official resources such as [IRDAI's Bima Bharosa portal](https://bimabharosa.irdai.gov.in/Home/FAQ).
+The initial curated corpus includes Sections 146–147 of the official [consolidated Motor Vehicles Act, 1988](https://www.indiacode.nic.in/bitstream/123456789/1798/1/eng.pdf) and IRDAI's grievance FAQs. These starter summaries were checked on 2026-11-15; expand and re-check the source set before using the prototype for real decisions.
 
-### Usability features to explore
+### Prototype limits
 
-- Compare the coverage and add-ons recorded for a user's vehicles.
-- Provide accessible, plain-language summaries, with multilingual explanations as a possible extension.
-- Offer renewal reminders and clear indicators for upcoming expiries or potential coverage gaps.
+- OCR is configured for English (`eng`) and requires Tesseract on the backend host.
+- The curated legal knowledge base is intentionally small and must not be treated as exhaustive or as legal advice.
+- The assistant uses a local Ollama chat model and embedding model. Answers require both to be installed and running; API and retrieval behavior can be tested with a fake model client.
+- Reminders are displayed in the app; email, push, calendar, payment, insurer, and claims-portal integrations are not implemented.
+- The app currently creates its schema at startup with SQLAlchemy `create_all`; schema migrations and a production deployment stack are not configured.
 
-## Expected impact
+## Architecture
 
-The project aims to help vehicle owners keep insurance information organized, find important terms more quickly, understand differences between policies, and prepare for renewals or claim conversations. Source-backed answers can make insurance language more approachable while showing users where each explanation came from.
+```mermaid
+flowchart LR
+    Browser[React + TypeScript SPA] -->|/api requests, signed session cookie| API[FastAPI]
+    Browser -->|Vite dev proxy| API
+    API --> DB[(SQLite by default<br/>PostgreSQL + pgvector supported)]
+    API --> Files[(Private PDF storage)]
+    API --> Ingest[PDF text extraction + optional Tesseract OCR]
+    Ingest --> Embed[Ollama embedding model]
+    Embed --> DB
+    API --> Retrieve[Owner/scope-filtered retrieval<br/>cosine similarity]
+    DB --> Retrieve
+    Retrieve --> Generate[Ollama chat model]
+    Generate -->|Answer + citations + disclaimer| Browser
+    Sources[Curated official source records] --> DB
+```
 
-The project will also demonstrate a practical RAG workflow: document ingestion, retrieval from user-specific and curated sources, context-aware generation, and source references. Its answers are informational and should not be treated as a promise of coverage or a claim decision.
+### Main request and data flows
 
-## Development notes
+1. The React app sends same-origin `/api` requests through Vite during development. FastAPI uses a signed session cookie and checks record ownership on protected endpoints.
+2. A policy PDF is size/signature checked, stored under a random server-side name, read page by page, and optionally OCRed. Suggested fields are saved for user review.
+3. The document is chunked with page numbers. Ollama generates 768-dimensional embeddings; chunks are stored with their owner and document/source association. If Ollama is unavailable, extracted text remains stored and indexing can be retried.
+4. For a question, the API selects the relevant global official sources and only that user's documents in the chosen scope. It ranks chunk embeddings by cosine similarity and adds a snapshot of that user's saved tracker records.
+5. Ollama receives the retrieved evidence with citation markers. The API returns the answer, source metadata and excerpts, an insufficient-evidence flag, and the informational disclaimer.
 
-As implementation begins, this README will be expanded with the actual application workflow, architecture, setup instructions, and repository structure. Those details will be documented to match the code as it is built.
+## Technology stack
+
+| Layer                    | Technology                                                                              |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| Frontend                 | React 18, TypeScript, Vite, React Router, Lucide icons                                  |
+| API                      | Python 3.10+, FastAPI, Pydantic                                                         |
+| Persistence              | SQLAlchemy 2; SQLite for local development/tests; PostgreSQL with pgvector type support |
+| Retrieval and generation | Ollama REST API; `nomic-embed-text` embeddings and `qwen3:4b-instruct` chat by default  |
+| PDF processing           | PyMuPDF; optional Pillow and Tesseract OCR                                              |
+| Authentication           | Argon2 password hashing and signed Starlette session cookie                             |
+| Tests and checks         | pytest, Ruff, Vitest, React Testing Library, TypeScript build, ESLint, Prettier         |
+
+## Database overview
+
+SQLAlchemy models are declared in `backend/app/models.py`.
+
+| Table               | Purpose                                                                           |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `users`             | Account and password hash.                                                        |
+| `vehicles`          | Owner-scoped garage entries.                                                      |
+| `policies`          | Insurer, cover types, coverage dates, premium schedule, add-ons, and notes.       |
+| `premium_payments`  | User-entered premium payment history.                                             |
+| `claims`            | Incident description, status, dates, amount, and notes.                           |
+| `policy_documents`  | Stored PDF metadata, extraction state, review suggestions, and claim association. |
+| `knowledge_sources` | Curated public legal and grievance sources.                                       |
+| `knowledge_chunks`  | Page/section chunks, owner/source association, and optional embeddings.           |
+
+## API overview
+
+All routes are under `/api`; interactive OpenAPI documentation is available at `/docs` while the backend is running.
+
+| Route group        | Endpoints                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| Authentication     | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`                         |
+| Garage and records | `/vehicles`, `/policies`, `/claims`, `/payments` (`GET`, `POST`, `PATCH`, and `DELETE` as appropriate) |
+| Documents          | Policy/claim PDF upload; list, review, re-index, download, and delete document routes                  |
+| Dashboard/support  | `GET /dashboard`, `GET /coverage-comparison`, `GET /grievance-guidance`                                |
+| Assistant          | `POST /assistant/ask` with optional `vehicle_id` or `policy_id` scope                                  |
+| Health             | `GET /health`                                                                                          |
+
+## Repository structure
+
+```text
+.
+├── AGENTS.md
+├── README.md
+├── backend/
+│   ├── app/
+│   │   ├── api/             # FastAPI route modules and auth dependency
+│   │   ├── core/            # Settings and password security
+│   │   ├── knowledge/       # Curated seed sources
+│   │   ├── services/        # PDF ingestion, Ollama, RAG, knowledge seeding
+│   │   ├── db.py            # SQLAlchemy engine/session/vector type
+│   │   ├── models.py        # Database schema
+│   │   ├── schemas.py       # Request/response validation
+│   │   └── main.py          # FastAPI app and startup
+│   ├── tests/               # Backend API and RAG tests
+│   ├── .env.example
+│   ├── pyproject.toml
+│   └── requirements.txt
+└── frontend/
+    ├── src/
+    │   ├── components/      # Shared layout and UI controls
+    │   ├── lib/             # API client, auth context, types, formatting
+    │   ├── pages/            # Dashboard, garage, policies, claims, assistant, etc.
+    │   └── styles.css
+    ├── package.json
+    └── vite.config.ts
+```
+
+## Local setup
+
+### Prerequisites
+
+- Python 3.10 or later and Node.js/npm.
+- [Ollama](https://ollama.com/download) for live assistant answers and policy indexing.
+- Tesseract OCR only if scanned PDFs need to be read. Configure its executable path in the environment if it is not on `PATH`.
+
+### Configure and install
+
+In PowerShell from the repository root:
+
+```powershell
+Copy-Item backend\.env.example backend\.env
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+Set a unique `SESSION_SECRET` in `backend/.env`. SQLite and private PDF files use local paths under the backend working directory by default. For PostgreSQL, set `DATABASE_URL` to a PostgreSQL DSN; the database user must be allowed to create the `vector` extension. The Postgres vector column currently expects 768-dimensional embeddings.
+
+Install frontend dependencies in a second PowerShell window from the repository root:
+
+```powershell
+cd frontend
+npm ci
+```
+
+Install/start Ollama, then download the configured models:
+
+```powershell
+ollama pull qwen3:4b-instruct
+ollama pull nomic-embed-text
+```
+
+Ollama listens at `http://localhost:11434` by default. Model tags can be changed in `backend/.env`.
+
+### Run locally
+
+Start the API from `backend/` with its virtual environment active:
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+Start the website from `frontend/` in another terminal:
+
+```powershell
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173). The backend health endpoint is [http://localhost:8000/api/health](http://localhost:8000/api/health), and API docs are at [http://localhost:8000/docs](http://localhost:8000/docs).
+
+### Tests and quality checks
+
+Run backend commands from `backend/` with `.venv` active:
+
+```powershell
+python -m pytest
+python -m ruff check app tests
+python -m ruff format --check app tests
+```
+
+Run frontend commands from `frontend/`:
+
+```powershell
+npm test
+npm run lint
+npm run format:check
+npm run build
+npm audit --audit-level=moderate
+```
+
+The checked-in tests cover account and record APIs, ownership isolation, document upload/review and cleanup, dashboard/comparison, RAG citations/abstention/tracker context, and authentication, garage, policy-payment, claim, and assistant UI interactions. Live Ollama generation and scanned-PDF OCR require their local services and are not covered by the fake-client test suite.
+
+## Configuration and data safety
+
+- `backend/.env.example` lists supported settings. Environment variables override defaults; local `.env` files are ignored by Git.
+- Set a random `SESSION_SECRET` for persistent development sessions. Production requires it; set `COOKIE_SECURE=true` behind HTTPS and restrict `CORS_ORIGINS` to the app's origin.
+- Do not commit real policy/claim PDFs, personal information, database files, credentials, or secrets. Use synthetic or redacted sample documents.
+- Uploaded PDFs are stored outside the web root and served through an owner-checked endpoint. Keep the data directory private and back it up only using appropriate access controls.
+
+## Deployment status
+
+The repository currently documents and supports a local development/demo setup. It does not include a container stack, production web server configuration, automated backups, email delivery, or schema migration tooling. Before public deployment, add a migration path, HTTPS and secure cookie configuration, managed PostgreSQL and private object storage, backup/retention rules, monitoring, rate limiting, and a security review.
