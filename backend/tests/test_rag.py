@@ -130,6 +130,44 @@ def test_rag_abstains_when_there_are_no_sources(session_factory):
         assert result["citations"] == []
 
 
+def test_rag_rejects_unrelated_questions_before_calling_model(session_factory):
+    class UnexpectedOllama(FakeOllama):
+        async def embed(self, _text):
+            raise AssertionError("off-topic questions must not reach the model")
+
+    with session_factory() as db:
+        user = User(email="off-topic@example.com", password_hash="unused")
+        db.add(user)
+        db.commit()
+        result = asyncio.run(
+            answer_question(db, user, "Write a poem about baking cakes", client=UnexpectedOllama())
+        )
+        assert result["insufficient_evidence"] is True
+        assert result["citations"] == []
+        assert "can't answer unrelated" in result["answer"]
+
+
+def test_rag_rejects_explicit_vehicle_not_in_garage(session_factory):
+    class UnexpectedOllama(FakeOllama):
+        async def embed(self, _text):
+            raise AssertionError("unregistered vehicle questions must not reach the model")
+
+    with session_factory() as db:
+        user = User(email="unknown-vehicle@example.com", password_hash="unused")
+        db.add(user)
+        db.flush()
+        db.add(Vehicle(owner_id=user.id, vehicle_type="car", label="Family Baleno"))
+        db.commit()
+        result = asyncio.run(
+            answer_question(
+                db, user, "What coverage does my Honda car have?", client=UnexpectedOllama()
+            )
+        )
+        assert result["insufficient_evidence"] is True
+        assert result["citations"] == []
+        assert "couldn't match that vehicle" in result["answer"]
+
+
 def test_rag_does_not_attach_unrelated_citations_to_uncited_generation(session_factory):
     class UncitedOllama(FakeOllama):
         async def answer(self, _question, _evidence):
