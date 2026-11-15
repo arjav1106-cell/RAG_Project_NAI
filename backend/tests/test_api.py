@@ -207,3 +207,55 @@ def test_grievance_guidance_points_to_official_portal(client):
     response = client.get("/api/grievance-guidance")
     assert response.status_code == 200
     assert response.json()["official_url"].startswith("https://bimabharosa.irdai.gov.in/")
+
+
+def test_assistant_api_integrates_owned_tracker_retrieval_and_citations(
+    registered_client, monkeypatch
+):
+    import app.services.rag as rag
+
+    class FakeOllama:
+        async def embed(self, _text):
+            return [1.0] + [0.0] * 767
+
+        async def answer(self, _question, evidence):
+            return f"The saved tracker is included. [{evidence[0]['citation_id']}]"
+
+    monkeypatch.setattr(rag, "OllamaClient", FakeOllama)
+    _vehicle, policy = add_vehicle_and_policy(registered_client)
+
+    response = registered_client.post(
+        "/api/assistant/ask",
+        json={"question": "What premium is saved in my tracker?", "policy_id": policy["id"]},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["insufficient_evidence"] is False
+    assert body["citations"][0]["title"] == "Your vehicle insurance tracker"
+    assert "[C1]" in body["answer"]
+
+
+def test_assistant_api_reports_unavailable_ollama_as_service_unavailable(
+    registered_client, monkeypatch
+):
+    import app.services.rag as rag
+    from app.services.ollama import OllamaUnavailable
+
+    class OfflineOllama:
+        async def embed(self, _text):
+            raise OllamaUnavailable("offline")
+
+        async def answer(self, _question, _evidence):
+            raise OllamaUnavailable("offline")
+
+    monkeypatch.setattr(rag, "OllamaClient", OfflineOllama)
+    _vehicle, policy = add_vehicle_and_policy(registered_client)
+
+    response = registered_client.post(
+        "/api/assistant/ask",
+        json={"question": "What premium is saved in my tracker?", "policy_id": policy["id"]},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "offline"
